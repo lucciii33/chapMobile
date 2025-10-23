@@ -13,7 +13,6 @@ import {
 import { userService } from '../api/userService';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
-import { Picker } from '@react-native-picker/picker';
 
 type RootStackParamList = {
   Login: undefined;

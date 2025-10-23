@@ -1,5 +1,6 @@
 import client from './client';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Alert } from 'react-native';
 export interface RegisterData {
   email: string;
   hashed_password: string;
@@ -16,5 +17,23 @@ export interface LoginData {
 
 export const userService = {
   register: (data: RegisterData) => client.post('/register', data),
-  login: (data: LoginData) => client.post('/login', data),
+  login: async (data: LoginData) => {
+    try {
+      const response = await client.post('/login', data);
+      const token = response.data.access_token;
+
+      if (token) {
+        await AsyncStorage.setItem('token', token);
+        Alert.alert('✅ Token guardado', token);
+      } else {
+        Alert.alert('⚠️ No se recibió token del backend');
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error('❌ Error al iniciar sesión:', error);
+      Alert.alert('Error', 'No se pudo iniciar sesión');
+      throw error;
+    }
+  },
 };
