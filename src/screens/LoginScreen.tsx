@@ -1,37 +1,55 @@
 import React, { useState } from 'react';
-import { View, Text, Button, StyleSheet, Alert, TextInput } from 'react-native';
+import {
+  View,
+  Text,
+  Button,
+  StyleSheet,
+  Alert,
+  TextInput,
+  Image,
+} from 'react-native';
 import { userService } from '../api/userService';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
+import { useForm } from '../context/useForm';
 
 export default function LoginScreen({ navigation }) {
-  const [formLogin, setFormLogin] = useState({
-    email: '',
-    hashed_password: '',
-  });
+  // const [formLogin, setFormLogin] = useState({
+  //   email: '',
+  //   hashed_password: '',
+  // });
 
   type RootStackParamList = {
     Dashboard: undefined;
   };
 
-  const handleChange = (key: string, value: string | boolean) => {
-    setFormLogin(prev => ({ ...prev, [key]: value }));
-  };
+  // const handleChange = (key: string, value: string | boolean) => {
+  //   setFormLogin(prev => ({ ...prev, [key]: value }));
+  // };
+  const { form, handleChange, validate, resetForm, errors } = useForm(
+    {
+      email: '',
+      hashed_password: '',
+    },
+    ['email', 'hashed_password'], // campos requeridos
+  );
 
   const navigationDashboard =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const handleLogin = async () => {
+    if (!validate()) return;
     try {
       const res = await userService.login({
-        ...formLogin,
+        ...form,
       });
       Alert.alert('✅ login exitoso', `Bienvenido ${res.full_name}`);
 
-      setFormLogin({
-        email: '',
-        hashed_password: '',
-      });
+      // setFormLogin({
+      //   email: '',
+      //   hashed_password: '',
+      // });
+      resetForm();
 
       navigationDashboard.navigate('Dashboard');
     } catch (err: any) {
@@ -45,20 +63,32 @@ export default function LoginScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
+      {/* <Image
+    source={require('../assets/login-logo.png')} // imagen local
+    style={styles.logo}
+    resizeMode="contain" // ajusta el tamaño sin deformar
+  /> */}
+      <Image
+        source={{
+          uri: 'https://images.pexels.com/photos/733416/pexels-photo-733416.jpeg',
+        }} // 👈 tu URL aquí
+        style={styles.logo}
+        resizeMode="contain"
+      />
       <Text style={styles.title}>Pantalla de Login</Text>
       <TextInput
         placeholder="Email"
-        value={formLogin.email}
+        value={form.email}
         onChangeText={v => handleChange('email', v)}
         autoCapitalize="none"
-        style={styles.input}
+        style={[styles.input, errors.email && styles.inputError]}
       />
       <TextInput
         placeholder="Contraseña"
-        value={formLogin.hashed_password}
+        value={form.hashed_password}
         onChangeText={v => handleChange('hashed_password', v)}
         secureTextEntry
-        style={styles.input}
+        style={[styles.input, errors.hashed_password && styles.inputError]}
       />
       <Button title="LOGIN" onPress={handleLogin} />
     </View>
@@ -74,5 +104,14 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     padding: 10,
     borderRadius: 6,
+  },
+  inputError: {
+    borderColor: 'red',
+  },
+  logo: {
+    width: 500,
+    height: 400,
+    alignSelf: 'center',
+    marginBottom: 10,
   },
 });

@@ -9,10 +9,12 @@ import {
   Text,
   TouchableOpacity,
   FlatList,
+  Image,
 } from 'react-native';
 import { userService } from '../api/userService';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
+import { useForm } from '../context/useForm';
 
 type RootStackParamList = {
   Login: undefined;
@@ -50,20 +52,33 @@ export default function RegisterScreen({ navigation }) {
   const navigationLogin =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
-  const [form, setForm] = useState({
-    full_name: '',
-    email: '',
-    country: '',
-    age: '',
-    hashed_password: '',
-    agree_to_terms_and_conditions: false,
-  });
+  // const [form, setForm] = useState({
+  //   full_name: '',
+  //   email: '',
+  //   country: '',
+  //   age: '',
+  //   hashed_password: '',
+  //   agree_to_terms_and_conditions: false,
+  // });
 
-  const handleChange = (key: string, value: string | boolean) => {
-    setForm(prev => ({ ...prev, [key]: value }));
-  };
+  const { form, handleChange, validate, resetForm, errors } = useForm(
+    {
+      full_name: '',
+      email: '',
+      country: '',
+      age: '',
+      hashed_password: '',
+      agree_to_terms_and_conditions: false,
+    },
+    ['full_name', 'email', 'country', 'hashed_password', 'age'], // campos requeridos
+  );
+
+  // const handleChange = (key: string, value: string | boolean) => {
+  //   setForm(prev => ({ ...prev, [key]: value }));
+  // };
 
   const handleRegister = async () => {
+    if (!validate()) return;
     if (!form.agree_to_terms_and_conditions) {
       Alert.alert('⚠️', 'Debes aceptar los términos y condiciones.');
       return;
@@ -76,14 +91,15 @@ export default function RegisterScreen({ navigation }) {
       });
       Alert.alert('✅ Registro exitoso', `Bienvenido ${res.data.full_name}`);
 
-      setForm({
-        full_name: '',
-        email: '',
-        country: '',
-        age: '',
-        hashed_password: '',
-        agree_to_terms_and_conditions: false,
-      });
+      // setForm({
+      //   full_name: '',
+      //   email: '',
+      //   country: '',
+      //   age: '',
+      //   hashed_password: '',
+      //   agree_to_terms_and_conditions: false,
+      // });
+      resetForm();
 
       navigationLogin.navigate('Login');
     } catch (err: any) {
@@ -96,18 +112,28 @@ export default function RegisterScreen({ navigation }) {
   };
   return (
     <View style={styles.container}>
+      <Image
+        source={{
+          uri: 'https://images.pexels.com/photos/733416/pexels-photo-733416.jpeg',
+        }} // 👈 tu URL aquí
+        style={styles.logo}
+        resizeMode="contain"
+      />
       <TextInput
         placeholder="Nombre completo"
         value={form.full_name}
         onChangeText={v => handleChange('full_name', v)}
-        style={styles.input}
+        style={[
+          styles.input,
+          errors.full_name && styles.inputError, // 👈 borde rojo si falta
+        ]}
       />
       <TextInput
         placeholder="Email"
         value={form.email}
         onChangeText={v => handleChange('email', v)}
         autoCapitalize="none"
-        style={styles.input}
+        style={[styles.input, errors.email && styles.inputError]}
       />
       {/* <Picker
         selectedValue={form.country}
@@ -121,7 +147,10 @@ export default function RegisterScreen({ navigation }) {
       </Picker> */}
       <View style={{ position: 'relative' }}>
         <TouchableOpacity
-          style={styles.input}
+          style={[
+            styles.input,
+            errors.country && styles.inputError, // 👈 igual para el dropdown
+          ]}
           onPress={() => setShowDropdown(!showDropdown)}
         >
           <Text style={{ color: form.country ? '#000' : '#888' }}>
@@ -156,14 +185,14 @@ export default function RegisterScreen({ navigation }) {
         value={form.age}
         onChangeText={v => handleChange('age', v)}
         keyboardType="numeric"
-        style={styles.input}
+        style={[styles.input, errors.age && styles.inputError]}
       />
       <TextInput
         placeholder="Contraseña"
         value={form.hashed_password}
         onChangeText={v => handleChange('hashed_password', v)}
         secureTextEntry
-        style={styles.input}
+        style={[styles.input, errors.hashed_password && styles.inputError]}
       />
 
       <View style={styles.switchContainer}>
@@ -221,5 +250,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
+  },
+  inputError: { borderColor: 'red' },
+  logo: {
+    width: 500,
+    height: 400,
+    alignSelf: 'center',
+    marginBottom: 10,
   },
 });

@@ -67,15 +67,16 @@ export default function HomeScreen({ navigation }) {
           </Animated.Text>
         ))}
       </View>
+      <Button
+        title="Volver al Register"
+        onPress={() => navigation.navigate('Register')}
+      />
 
       {/* <Button
         title="Volver al Login"
         onPress={() => navigation.navigate('Login')}
       />
-      <Button
-        title="Volver al Register"
-        onPress={() => navigation.navigate('Register')}
-      /> */}
+      */}
     </View>
   );
 }
