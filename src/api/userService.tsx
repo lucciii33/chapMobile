@@ -20,11 +20,20 @@ export const userService = {
   login: async (data: LoginData) => {
     try {
       const response = await client.post('/login', data);
-      const token = response.data.access_token;
+      const { access_token, ...userData } = response.data; // <--- ✨ ¡Desestructuración Mágica!
 
-      if (token) {
-        await AsyncStorage.setItem('token', token);
-        Alert.alert('✅ Token guardado', token);
+      if (access_token) {
+        // 1. Guardar el token para la autenticación de APIs
+        await AsyncStorage.setItem('token', access_token);
+
+        // 2. Guardar los datos del usuario (ID, full_name, etc.)
+        // Necesitas convertir el objeto a string para guardarlo en AsyncStorage
+        await AsyncStorage.setItem('userData', JSON.stringify(userData));
+
+        Alert.alert(
+          '✅ Login Exitoso',
+          `Bienvenido, ${userData.full_name}. Tu ID es ${userData.id}`,
+        );
       } else {
         Alert.alert('⚠️ No se recibió token del backend');
       }
