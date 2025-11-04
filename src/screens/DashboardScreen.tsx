@@ -1,11 +1,14 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Button, StyleSheet, Text, ScrollView } from 'react-native';
 import { PetService } from '../api/petService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PetCard } from '../components/PetCard';
+import { HeaderDashboard } from '../components/HeaderDashboard';
+import CreatePetFlow from '../components/CreatePetFlow2';
 
 export default function DashboardScreen({ navigation }) {
   const { getPets, allPets } = PetService();
+  const [modalVisible, setModalVisible] = useState(false);
 
   const fetchUserPets = async () => {
     try {
@@ -36,11 +39,12 @@ export default function DashboardScreen({ navigation }) {
   }, []);
   return (
     <View style={styles.container}>
-      <Text style={styles.infoText}>
+      <HeaderDashboard onAddPress={() => setModalVisible(true)} />
+      {/* <Text style={styles.infoText}>
         {allPets.length > 0
           ? `Mascotas encontradas: ${allPets.length}`
           : 'Cargando mascotas o ninguna registrada...'}
-      </Text>
+      </Text> */}
       <ScrollView style={{ width: '100%' }}>
         {allPets.map(pet => (
           <PetCard
@@ -59,6 +63,10 @@ export default function DashboardScreen({ navigation }) {
       <Button
         title="Volver al Register"
         onPress={() => navigation.navigate('Register')}
+      />
+      <CreatePetFlow
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
       />
     </View>
   );
